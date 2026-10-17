@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>neogeo-webemu — シム群馬 (TEST BIOS / 実機未確認)</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <div id="screen-wrap"><canvas id="screen" width="304" height="224"></canvas>
+    <div id="tap" class="overlay">タップ / クリックで開始（音声ON）</div>
+  </div>
+  <div id="bar">
+    <select id="sys"><option value="mvs">MVS</option><option value="aes">AES</option></select>
+    <button id="btn-reset">RESET</button>
+    <button id="btn-mute">音:ON</button>
+    <button id="btn-lic">ライセンス</button>
+    <span id="fps"></span>
+  </div>
+  <div id="pad">
+    <div id="dpad">
+      <div class="d" data-k="up" style="grid-area:u">▲</div>
+      <div class="d" data-k="left" style="grid-area:l">◀</div>
+      <div class="d" data-k="right" style="grid-area:r">▶</div>
+      <div class="d" data-k="down" style="grid-area:d">▼</div>
+    </div>
+    <div id="sysbtn">
+      <div class="s" data-k="coin">COIN</div>
+      <div class="s" data-k="select">SELECT</div>
+      <div class="s" data-k="start">START</div>
+    </div>
+    <div id="abcd">
+      <div class="b" data-k="a">A</div><div class="b" data-k="b">B</div>
+      <div class="b" data-k="c">C</div><div class="b" data-k="d">D</div>
+    </div>
+  </div>
+  <div id="note">自作TEST BIOS使用・実機未確認 / Emulation core: Geolith (BSD-3-Clause)</div>
+</div>
+<div id="lic" class="modal" hidden><div class="modal-in"><button id="lic-close">閉じる</button><pre id="lic-text"></pre></div></div>
+<script src="licenses.js"></script>
+<script src="roms.local.js"></script>
+<script src="neocore.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
