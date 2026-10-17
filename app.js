@@ -1,10 +1,10 @@
-// neogeo-webemu frontend (PRIVATE). Runs Sim Gunma with the GB clean-room TEST BIOS.
+// neogeo-webemu frontend. Built-in: Sim Gunma + team TEST BIOS. Optional: player-supplied ROM/BIOS (browser-only).
 (async () => {
   const qs = new URLSearchParams(location.search);
   const sys = qs.get('sys') === 'aes' ? 'aes' : 'mvs';
   document.getElementById('sys').value = sys;
   const SYS = sys === 'aes' ? 0 : 1, REGION = sys === 'aes' ? 1 /*JP*/ : 3 /*EU: sp-s2.sp1*/;
-  const FPS = sys === 'aes' ? 59.599 : 59.1856;
+  let FPS = sys === 'aes' ? 59.599 : 59.1856;
 
   const AC = window.AudioContext || window.webkitAudioContext;
   let actx = null; try { actx = new AC({ latencyHint: 'interactive' }); } catch (e) { actx = null; }
@@ -13,10 +13,31 @@
   const M = await NeoCore();
   const b64 = s => { const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
   const put = u => { const p = M._ng_alloc(u.length); M.HEAPU8.set(u, p); return [p, u.length]; };
-  if (!window.NEO_ROMS) { alert('roms.local.js がありません (tools/mkroms.py を実行)'); return; }
-  M._ng_init(SYS, REGION, rate);
-  if (!M._ng_load_bios(...put(b64(NEO_ROMS[sys === 'aes' ? 'bios_aes' : 'bios_mvs'])))) { alert('BIOS読込失敗'); return; }
-  if (!M._ng_load_neo(...put(b64(NEO_ROMS.neo)))) { alert('ROM読込失敗'); return; }
+  const src = qs.get('src') === 'user' ? 'user' : 'builtin';
+  let gameName = 'シム群馬';
+  if (src === 'user') {
+    const r = await UserRoms.take();
+    if (!r) { alert('読み込むファイルがありません。内蔵ゲームに戻ります。'); location.search = ''; return; }
+    const names = await UserRoms.zipNames(r.bios);
+    let usys = r.sys, uSYS, uREG;
+    if (usys === 'uni') { uSYS = 2; uREG = 0; }
+    else if (usys === 'aes') { uSYS = 0; uREG = names.includes('neo-po.bin') ? 1 : 0; }
+    else { uSYS = 1; const m = [['sp-s2.sp1', 3], ['sp-u2.sp1', 0], ['japan-j3.bin', 1], ['sp-45.sp1', 2]].find(([n]) => names.includes(n)); uREG = m ? m[1] : 3; }
+    M._ng_init(uSYS, uREG, rate);
+    if (!M._ng_load_bios(...put(r.bios))) { alert('BIOSの読み込みに失敗しました（ZIP内のファイル名と種類を確認してください）'); return; }
+    let neo = r.game;
+    if (UserRoms.isZip(neo)) { neo = await UserRoms.extractNeo(neo); if (!neo) { alert('ZIPの中に .neo ファイルが見つかりません。このエミュは .neo 形式のゲームのみ対応です。'); return; } }
+    if (!M._ng_load_neo(...put(neo))) { alert('ROMの読み込みに失敗しました（.neo 形式か確認してください）'); return; }
+    gameName = r.gameName || 'ユーザーROM';
+    window.__userSys = usys; FPS = usys === 'aes' ? 59.599 : 59.1856;
+  } else {
+    if (!window.NEO_ROMS) { alert('内蔵ROMがありません'); return; }
+    M._ng_init(SYS, REGION, rate);
+    if (!M._ng_load_bios(...put(b64(NEO_ROMS[sys === 'aes' ? 'bios_aes' : 'bios_mvs'])))) { alert('BIOS読込失敗'); return; }
+    if (!M._ng_load_neo(...put(b64(NEO_ROMS.neo)))) { alert('ROM読込失敗'); return; }
+  }
+  document.getElementById('gamename').textContent = gameName;
+  window.__booted = true;
 
   // ---- video ----
   const cv = document.getElementById('screen'), ctx = cv.getContext('2d');
@@ -97,6 +118,8 @@
   const AUTOTEST = qs.get('autotest') === '1'; let totalFrames = 0;
   // ---- UI ----
   document.getElementById('sys').onchange = e => { location.search = '?sys=' + e.target.value; };
+  if (src === 'user') { const so = document.getElementById('sys'); so.value = window.__userSys === 'aes' ? 'aes' : 'mvs'; so.disabled = true; }
+  UserRoms.initUI();
   document.getElementById('btn-reset').onclick = () => M._ng_reset(0);
   const mb = document.getElementById('btn-mute'); mb.onclick = () => { muted = !muted; mb.textContent = muted ? '音:OFF' : '音:ON'; if (!started) start(); };
   document.getElementById('lic-text').textContent = window.NEO_LICENSES || '';
@@ -114,7 +137,7 @@
     if (AUTOTEST) acc = Math.max(acc, step * 3);
     while (acc >= step && ran < 3) { readInput(); M._ng_frame(); totalFrames++; pushAudio(); acc -= step; ran++; frames++; }
     if (ran) blit();
-    if (now - fpsT > 1000) { fpsEl.textContent = (frames * 1000 / (now - fpsT)).toFixed(1) + 'fps ' + sys.toUpperCase(); frames = 0; fpsT = now; }
+    if (now - fpsT > 1000) { fpsEl.textContent = (frames * 1000 / (now - fpsT)).toFixed(1) + 'fps ' + (window.__userSys || sys).toUpperCase(); frames = 0; fpsT = now; }
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);

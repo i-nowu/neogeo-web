@@ -35,3 +35,9 @@ html,body{margin:0;height:100%;background:#000;color:#ddd;font-family:system-ui,
 }
 /* desktop with a fine pointer: hide touch pad */
 @media (hover:hover) and (pointer:fine){ #pad{display:none} body.showpad #pad{display:flex} }
+#user .modal-in{font-size:14px;line-height:1.5}
+#user .notice{background:#402;color:#fdd;padding:6px;border-radius:4px}
+#u-drop{border:2px dashed #888;padding:18px;text-align:center;margin:8px 0}
+#u-drop.over{border-color:#4cf;background:#123}
+#gamename{margin-left:6px;opacity:.8}
+#user .modal-in{height:auto;max-height:90vh;overflow:auto}

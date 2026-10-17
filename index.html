@@ -16,7 +16,10 @@
     <select id="sys"><option value="mvs">MVS</option><option value="aes">AES</option></select>
     <button id="btn-reset">RESET</button>
     <button id="btn-mute">音:ON</button>
+    <button id="btn-user">ROM読込</button>
+    <button id="btn-builtin">内蔵ゲーム</button>
     <button id="btn-lic">ライセンス</button>
+    <span id="gamename"></span>
     <span id="fps"></span>
   </div>
   <div id="pad">
@@ -39,7 +42,20 @@
   <div id="note">自作TEST BIOS使用・実機未確認 / Emulation core: Geolith (BSD-3-Clause)</div>
 </div>
 <div id="lic" class="modal" hidden><div class="modal-in"><button id="lic-close">閉じる</button><pre id="lic-text"></pre></div></div>
+<div id="user" class="modal" hidden><div class="modal-in">
+  <button id="u-close">閉じる</button>
+  <h3>自分のROM・BIOSで遊ぶ</h3>
+  <p class="notice">市販ソフトのROM・BIOSは配布していません。ご自身が正当に所有するものをご利用ください。ファイルはブラウザ内でのみ処理され、送信されません。</p>
+  <p>BIOSの種類: <select id="u-sys"><option value="mvs">MVS</option><option value="aes">AES</option><option value="uni">Universe BIOS</option></select></p>
+  <p>BIOS（ZIP）: <input type="file" id="u-bios" accept=".zip"> <span id="u-bios-n"></span></p>
+  <p>ゲーム（.neo / .neoを含むZIP）: <input type="file" id="u-game" accept=".neo,.zip"> <span id="u-game-n"></span></p>
+  <div id="u-drop">ここにファイルをドラッグ＆ドロップ（ファイル名に bios / neogeo を含むものはBIOS扱い）</div>
+  <p><label><input type="checkbox" id="u-cache"> この端末（IndexedDB）に保存して次回も使う</label></p>
+  <p><button id="u-boot" disabled>起動</button> <button id="u-run-cached" disabled>保存したもので起動</button> <button id="u-del" disabled>保存を削除</button> <span id="u-cached"></span></p>
+  <p id="u-msg"></p>
+</div></div>
 <script src="licenses.js"></script>
+<script src="userroms.js"></script>
 <script src="roms.local.js"></script>
 <script src="neocore.js"></script>
 <script src="app.js"></script>
